@@ -1,0 +1,49 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs & Debug
+*.log
+*.tmp
+
+# Virtualenv
+venv/
+env/
+ENV/
+.venv/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Configs & Secrets
+config.json
+token.txt
+.env
+
+# VSCode
+.vscode/
+
+# PyInstaller
+dist/
+build/
+*.spec
+
+# Docker
+*.pid
+*.db
+*.sqlite3
+.dockerignore
+requierments.txt
+Dockerfile
+
+# Pytest / coverage
+.cache/
+.tox/
+.coverage
+.pytest_cache/
+
+# IDEs
+.idea/
+*.swp
