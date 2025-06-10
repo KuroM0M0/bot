@@ -1,5 +1,8 @@
 from discord.ext import commands
+from discord import app_commands
 import discord
+import database.py
+from datetime import datetime
 
 class MarriageView(discord.ui.View):
     def __init__(self, author, target):
@@ -15,6 +18,7 @@ class MarriageView(discord.ui.View):
             return
         self.result = True
         await interaction.response.edit_message(content=f"{self.author.mention} and {self.target.mention} are now married! 💖", view=None)
+        buildSqlInsert('')
         self.stop()
 
     @discord.ui.button(label="Decline ❌", style=discord.ButtonStyle.danger)
@@ -83,57 +87,58 @@ def build_family_embed(data, bot, title):
         embed.set_footer(text="Familienstatus-System")
         return embed
 
-
 class Marriage(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
-    @commands.command(name="marry", help="send a proposal to <user>")
-    async def marry(self, ctx, user: discord.User):
-        if user == ctx.author:
-            await ctx.send("You can't marry yourself!")
+
+    @app_commands.command(name="marry", description="Send a proposal to another user")
+    @app_commands.describe(member="The user you want to marry")
+    async def marry(self, interaction: discord.Interaction, member: discord.User):
+        if member == interaction.user:
+            await interaction.response.send_message("You can't marry yourself!", ephemeral=True)
             return
-        view = MarriageView(ctx.author, user)
-        await ctx.send(f"{ctx.author.mention} wants to marry {user.mention}! 💍", view=view)
-    
-    @commands.command(name="partner", help="get information about your partner")
-    async def partner(self, ctx):
+        view = MarriageView(interaction.user, member)
+        await interaction.response.send_message(f"{interaction.user.mention} wants to marry {member.mention}! 💍", view=view)
+
+    @app_commands.command(name="partner", description="Show info about your partner")
+    async def partner(self, interaction: discord.Interaction):
         sample_data = {
-            "user_id": str(ctx.author.id),
+            "user_id": str(interaction.user.id),
             "married_to": "789",
             "past_marriages": ["1011", "1213"]
         }
         embed = build_family_embed(sample_data, self.bot, "💍 Ehepartner")
         view = MarriageInfo()
-        await ctx.send(embed=embed, view=view)
+        await interaction.response.send_message(embed=embed, view=view)
 
-    @commands.command(name="divorce", help="divorce your partner")
-    async def divorce(self, ctx):
-        await ctx.send(f"You have divorced: {ctx.author.mention}")
+    @app_commands.command(name="divorce", description="Divorce your partner")
+    async def divorce(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f"You have divorced: {interaction.user.mention}")
 
-    @commands.command(name="sendlove", help="send love to <user> with message")
-    async def sendlove(self, ctx, user: discord.User, *, message):
-        await ctx.send(f"{ctx.author.mention} sends love to {user.mention}: {message}")        
-    
-    @commands.command(name="children", help="get information about your children")
-    async def children(self, ctx):
+    @app_commands.command(name="sendlove", description="Send love to a user with a message")
+    @app_commands.describe(member="The user you want to send love to", message="The message you want to send")
+    async def sendlove(self, interaction: discord.Interaction, member: discord.Member, message: str):
+        await interaction.response.send_message(f"{interaction.user.mention} sends love to {member.mention}: {message}")
+
+    @app_commands.command(name="children", description="Show info about your children")
+    async def children(self, interaction: discord.Interaction):
         sample_data = {
-            "user_id": str(ctx.author.id),
+            "user_id": str(interaction.user.id),
             "children": ["789", "1011"]
         }
         embed = build_family_embed(sample_data, self.bot, "🧒 Kinder")
         view = MarriageInfo()
-        await ctx.send(embed=embed, view=view)
-    
-    @commands.command(name="family", help="get information about your family")
-    async def family(self, ctx):
+        await interaction.response.send_message(embed=embed, view=view)
+
+    @app_commands.command(name="family", description="Show info about your family")
+    async def family(self, interaction: discord.Interaction):
         sample_data = {
-            "user_id": str(ctx.author.id),
+            "user_id": str(interaction.user.id),
             "married_to": "456",
             "children": ["789", "1011"],
             "parents": ["999", "998"],
             "adoption_pending": {
-                "requested_by": str(ctx.author.id),
+                "requested_by": str(interaction.user.id),
                 "target": "789",
                 "timestamp": "2024-06-06T12:00:00"
             }
@@ -141,7 +146,8 @@ class Marriage(commands.Cog):
 
         embed = build_family_embed(sample_data, self.bot, "👪 Familiendaten")
         view = MarriageInfo()
-        await ctx.send(embed=embed, view=view)
+        await interaction.response.send_message(embed=embed, view=view)
 
 async def setup(bot):
-    await bot.add_cog(Marriage(bot))
+    cog = Marriage(bot)
+    await bot.add_cog(cog)
