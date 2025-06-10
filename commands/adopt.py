@@ -1,4 +1,5 @@
 from discord.ext import commands
+from discord import app_commands
 import discord
 
 class AdoptView(discord.ui.View):
@@ -29,21 +30,23 @@ class Adopt(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name="adopt", help="ask for adoption")
-    async def adopt(self, ctx, user: discord.User):
-        if user == ctx.author:
-            await ctx.send("You can't adopt yourself!")
+    @app_commands.command(name="adopt", description="ask for adoption")
+    @app_commands.describe(member="The user you want to adopt")
+    async def adopt(self, interaction: discord.Interaction, member: discord.Member):
+        if member == interaction.author:
+            await interaction.send("You can't adopt yourself!")
             return
-        view = AdoptView(ctx.author, user)
-        await ctx.send(f"{ctx.author.mention} wants to adopt {user.mention}!", view=view) # erweiterung durch partner
+        view = AdoptView(interaction.author, member)
+        await interaction.send(f"{interaction.user.mention} wants to adopt {member.mention}!", view=view) # erweiterung durch partner
         
-    @commands.command(name="disown", help="disown your children")
-    async def disown(self, ctx):
-        await ctx.send(f"You have disowned: {ctx.author.mention}")
+    @app_commands.command(name="disown", description="disown your children")
+    @app_commands.describe(member="The user you want to disown")
+    async def disown(self, interaction: discord.Interaction, member: discord.Member):
+        await interaction.send(f"You have disowned: {interaction.user.mention}")
     
-    @commands.command(name="leavefamily", help="leave your family")
-    async def leavefamily(self, ctx):
-        await ctx.send(f"You have left your family: {ctx.author.mention}")
+    @app_commands.command(name="leavefamily", description="leave your family")
+    async def leavefamily(self, interaction: discord.Interaction):
+        await interaction.send(f"You have left your family: {interaction.user.mention}")
     
 async def setup(bot):
     cog = Adopt(bot)
