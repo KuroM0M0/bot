@@ -8,8 +8,7 @@ class Clean(commands.Cog):
     @commands.command(name="clean", help="clean the channel")
     async def clean(self, ctx):
         await ctx.channel.purge(limit=100)
-        await ctx.send("Channel cleaned!")
-        await ctx.message.delete(delay=5)
+        await ctx.send("Channel cleaned!", delete_after=3)
     
 async def setup(bot):
     cog = Clean(bot)
