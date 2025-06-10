@@ -1,7 +1,7 @@
 from discord.ext import commands
 from discord import app_commands
 import discord
-import database.py
+from DataBase.dataBase import *
 from datetime import datetime
 
 class MarriageView(discord.ui.View):
@@ -18,7 +18,7 @@ class MarriageView(discord.ui.View):
             return
         self.result = True
         await interaction.response.edit_message(content=f"{self.author.mention} and {self.target.mention} are now married! 💖", view=None)
-        buildSqlInsert('')
+        buildSQLInsert('')
         self.stop()
 
     @discord.ui.button(label="Decline ❌", style=discord.ButtonStyle.danger)
