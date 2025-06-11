@@ -1,8 +1,14 @@
 from discord.ext import commands
 from discord import app_commands
 import discord
+import os
 from DataBase.dataBase import *
+from events.events import *
+from dotenv import load_dotenv
 from datetime import datetime
+
+def descendant_node(person, children=None):
+    return {"person": person, "children": children or []}
 
 class MarriageView(discord.ui.View):
     def __init__(self, author, target):
@@ -18,7 +24,7 @@ class MarriageView(discord.ui.View):
             return
         self.result = True
         await interaction.response.edit_message(content=f"{self.author.mention} and {self.target.mention} are now married! 💖", view=None)
-        buildSQLInsert('')
+        buildSQLInsert("marriage", ["user_id", "married_to"], [str(self.author.id), str(self.target.id)])
         self.stop()
 
     @discord.ui.button(label="Decline ❌", style=discord.ButtonStyle.danger)
@@ -148,6 +154,42 @@ class Marriage(commands.Cog):
         view = MarriageInfo()
         await interaction.response.send_message(embed=embed, view=view)
 
+    @app_commands.command(name="stammbaum", description="Zeige deinen Stammbaum als Bild")
+    async def stammbaum(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        guild = interaction.guild
+        user = interaction.user
+        partner = guild.get_member(1380560415175610459)  # Beispiel-ID Partner
+        child1 = guild.get_member(1380560415175610459)
+        child2 = guild.get_member(1380560415175610459)
+        grandchild1 = guild.get_member(1380560415175610459)
+        grandchild2 = guild.get_member(1380560415175610459)
+
+        # Filtere None raus
+        children = [c for c in [child1, child2] if c]
+
+        # Dictionary: child.id -> [Enkel als Member]
+        grandchildren = {
+            child1.id: [grandchild1] if child1 and grandchild1 else [],
+            child2.id: [grandchild2] if child2 and grandchild2 else []
+        }
+
+        root = descendant_node(
+            user,
+            children=[
+                descendant_node(child1, children=[
+                    descendant_node(grandchild1), descendant_node(grandchild2)
+                ]),
+                descendant_node(child2)
+            ]
+        )
+
+        img_bytes = await generate_full_descendant_tree(root)
+
+        file = discord.File(img_bytes, filename="stammbaum.png")
+        await interaction.followup.send(content="🌳 Dein Stammbaum:", file=file)
 async def setup(bot):
+    
     cog = Marriage(bot)
     await bot.add_cog(cog)
