@@ -33,8 +33,9 @@ class MyBot(commands.Bot):
 bot = MyBot(intents=intents)
 
 # Events auslagern (z. B. on_ready)
-from events import ready
+from events import ready, message
 ready.setup(bot)
+message.setup(bot)
 
 # Hauptfunktion zum Laden aller Cogs und Starten des Bots
 async def main():

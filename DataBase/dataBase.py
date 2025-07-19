@@ -5,7 +5,7 @@ connection = sqlite3.connect(dataBase)
 cursor = connection.cursor()
     
 
-def buildSQLInsert(table, rows, data):
+def SQLInsert(table, rows, data):
     """
     Build a SQL Insert command given a table, rows, and data to insert
 
@@ -20,7 +20,7 @@ def buildSQLInsert(table, rows, data):
                    (table, rows, data))
     connection.commit()
 
-def buildSQLUpdate(table, rows, id):
+def SQLUpdate(table, rows, id):
     """
     Build a SQL Update command given a table, rows, and id to update
 
@@ -35,7 +35,7 @@ def buildSQLUpdate(table, rows, id):
                    (table, rows, id))
     connection.commit()
 
-def buildSQLDelete(table, id):
+def SQLDelete(table, id):
     """
     Build a SQL Delete command given a table and an id to delete a specific row
 
@@ -49,7 +49,7 @@ def buildSQLDelete(table, id):
                    (table, id))
     connection.commit()
     
-def buildSQLSelect(table, id):
+def SQLSelect(table, id):
     """
     Build a SQL Select command to retrieve all columns from a specific row in a table by ID.
 
@@ -64,3 +64,14 @@ def buildSQLSelect(table, id):
                    WHERE ID = ?''',
                    (table, id))
     return cursor.fetchall()
+
+
+def checkUserExists(userID):
+    """
+    Check if a user exists in the database
+
+    :param userID: The ID of the user to check
+    :return: True if the user exists, False otherwise
+    """
+    cursor.execute("SELECT * FROM users WHERE ID = ?", (userID,))
+    return cursor.fetchone()
